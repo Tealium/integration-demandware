@@ -1,0 +1,19 @@
+/**
+ * This script loops through the products in a set to get the price of the set
+ * @input ProductIn : dw.catalog.Product The product set ID
+ * @output ProductSetArrayList : dw.util.ArrayList  The sum of the product set
+ *
+ */
+ 
+importPackage( dw.system );
+importPackage( dw.util );
+importPackage( dw.catalog );
+
+function execute( pdict : PipelineDictionary ) : Number
+{		
+	var collection : Collection = pdict.ProductIn.getProductSetProducts();
+
+	pdict.ProductSetArrayList = collection;
+	
+	return PIPELET_NEXT;
+}
