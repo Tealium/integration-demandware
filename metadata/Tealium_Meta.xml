@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="tealium_account">
+                <display-name xml:lang="x-default">Tealium Account</display-name>
+                <description xml:lang="x-default">Your Tealium account identifier</description>
+                <type>string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+                <field-length>0</field-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="tealium_profile">
+                <display-name xml:lang="x-default">Tealium Profile</display-name>
+                <description xml:lang="x-default">Your Tealium profile for this site</description>
+                <type>string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+                <field-length>0</field-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="tealium_env">
+                <display-name xml:lang="x-default">Tealium Environment</display-name>
+                <description xml:lang="x-default">The Tealium publish location for this Demwandware instance (i.e. Use "prod" for Production instance type)</description>
+                <type>string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+                <field-length>0</field-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="tealium_enabled_flag">
+                <display-name xml:lang="x-default">Tealium Enabled</display-name>
+                <description xml:lang="x-default">This box must be checked to enable this integration</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        
+        <group-definitions>
+            <attribute-group group-id="Tealium">
+                <display-name xml:lang="x-default">Tealium</display-name>
+                <attribute attribute-id="tealium_account"/>
+                <attribute attribute-id="tealium_profile"/>
+                <attribute attribute-id="tealium_env"/>
+                <attribute attribute-id="tealium_enabled_flag"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>

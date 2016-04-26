@@ -1,0 +1,379 @@
+<isif condition="${dw.system.Site.current.preferences.custom.tealium_enabled_flag === true && dw.system.Site.current.preferences.custom.tealium_profile != null && dw.system.Site.current.preferences.custom.tealium_account != null}">
+
+<isscript>
+	importPackage( dw.order );
+	importPackage( dw.catalog );
+	importPackage( dw.util );
+	importPackage( dw.content );
+
+	var __utagDataStr : String = "";
+	var __utagData : Object = new Object();
+	var __productLineItems : Collection = null;
+	var __couponLineItems : Collection = null;
+	var __priceAdjustments : Collection = null;
+	var __encodeHttpParameterMapFlag : Bool = false;
+	
+	/*  This the default JSON.stringify output of \" to &quot; */
+	function __enc(a) {
+		if (__encodeHttpParameterMapFlag){
+			return dw.util.StringUtils.encodeString(""+ a, dw.util.StringUtils.ENCODE_TYPE_HTML);
+		}
+		else 
+		{
+			return a;
+		}
+	}
+/* DEBUG (uncomment for debug) */
+//try{	
+/* END DEBUG */
+
+	__utagData.page_name = pdict.CurrentPageMetaData.title;
+	__utagData.page_type = "content";
+	/* From pageContext.type -- the pageContext object set is in every storefront template */
+	__utagData.page_context_type = (""+__enc(pdict.CurrentHttpParameterMap.pagecontexttype)).toLowerCase();
+	__utagData.page_context_title = (""+__enc(pdict.CurrentHttpParameterMap.pagecontexttitle)).toLowerCase();
+	
+	if (pdict.CurrentUser != null)
+	{
+		__utagData.user_anonymous = "" + pdict.CurrentUser.anonymous;
+		__utagData.user_authenticated = "" + pdict.CurrentUser.authenticated;
+		__utagData.user_registered = "" + pdict.CurrentUser.registered;
+		__utagData.customer_id = "" + pdict.CurrentUser.ID;
+		if (pdict.CurrentUser.profile != null && pdict.CurrentUser.profile.email != null) {
+			__utagData.customer_email = pdict.CurrentUser.profile.email;
+		}
+	}
+    
+	if (pdict.CurrentHttpParameterMap.contentsearchresultscount.value != null && pdict.product == null && pdict.CurrentHttpParameterMap.pagecgid == '') 
+	{
+		__utagData.search_results = "" + __enc(pdict.CurrentHttpParameterMap.contentsearchresultscount.value);
+		__utagData.page_type = "content search";
+	}
+	
+	if (pdict.CurrentHttpParameterMap.searchresultscount.value != null && pdict.product == null && pdict.CurrentHttpParameterMap.pagecgid == '') 
+	{
+		__utagData.search_results = "" + __enc(pdict.CurrentHttpParameterMap.searchresultscount.value);
+		__utagData.page_type = "search";
+	}
+    
+	if (pdict.CurrentHttpParameterMap.pagecgid != ''  && pdict.product == null)
+	{
+		__utagData.page_type = "category";
+		__utagData.page_category = __enc(pdict.CurrentHttpParameterMap.pagecgid.value);
+	}
+	
+	if (pdict.CurrentHttpParameterMap.searchterm != null && pdict.CurrentHttpParameterMap.searchterm.value!= null)
+	{
+		__utagData.search_term = "" + __enc(pdict.CurrentHttpParameterMap.searchterm.value);
+	}
+
+	if (pdict.product != null && pdict.product.productSet != true)
+	{		
+	
+		__utagData.page_name = pdict.product.name;
+		__utagData.page_type = "product";
+		
+		/* OPTIONAL: classification */
+		/*
+		if (pdict.product.classificationCategory != null)
+		{
+			__utagData.product_classification = ["" + pdict.product.classificationCategory.displayName];
+		}
+		*/
+		/* END OPTIONAL: classification */
+
+		
+		/* OPTIONAL: multiple categories */
+		/*
+		if (pdict.product.categories != null){
+			for(var ___cat in pdict.product.categories){
+				__utagData["product_cat_id"+___cat]=["" + pdict.product.categories[___cat].ID];
+				__utagData["product_cat_name"+___cat]=["" + pdict.product.categories[___cat].displayName];
+			}
+		}
+		*/
+		/* END OPTIONAL: multiple categories */
+		
+		if (pdict.product.priceModel.price.value != "0")
+		{
+			__utagData.product_unit_price = [pdict.product.priceModel.price.value.toFixed(2)];
+		}
+		else if (pdict.product.priceModel.maxPrice.value != "0")
+		{
+			__utagData.product_unit_price = [pdict.product.priceModel.maxPrice.value.toFixed(2)];
+		}
+		else
+		{
+			__utagData.product_unit_price = [pdict.product.priceModel.minPrice.value.toFixed(2)];
+		}
+ 
+		__utagData.product_id = ["" + pdict.product.ID];
+		__utagData.product_name = ["" + pdict.product.name];
+		__utagData.product_brand = ["" + pdict.product.brand];
+		
+		/* May wish to use .displayName here instead of .ID */
+		if (pdict.product.primaryCategory != null)
+		{
+			__utagData.product_category = ["" + pdict.product.primaryCategory.ID];
+		}
+		else if(pdict.product.master == false && pdict.product.masterProduct != null && pdict.product.masterProduct.primaryCategory != null)
+		{
+			__utagData.product_category = ["" + pdict.product.masterProduct.primaryCategory.ID];
+		}
+		
+		__utagData.product_sku = ["" + pdict.product.manufacturerSKU];
+		
+		/** OPTIONAL: manufacturer **/
+		/*
+		__utagData.product_manufacturer = ["" + pdict.product.manufacturerName];
+		*/
+		/** END OPTIONAL: manufacturer **/
+	}
+	
+	if (pdict.order != null && pdict.order.orderNo != null && __utagData.page_context_type != "orderhistory") 
+	{
+		__utagData.page_name = "confirmation";
+		__utagData.page_type = "checkout";
+		__utagData.order_id = pdict.order.orderNo+"";
+		
+		__productLineItems = pdict.order.productLineItems;
+		__couponLineItems = pdict.order.couponLineItems;
+		__priceAdjustments = pdict.order.priceAdjustments;
+		__utagData.order_discount = (pdict.order.merchandizeTotalNetPrice.value - pdict.order.adjustedMerchandizeTotalNetPrice.value).toFixed(2);
+		__utagData.order_subtotal = pdict.order.adjustedMerchandizeTotalNetPrice.value.toFixed(2);
+		__utagData.order_tax = ((pdict.order.totalTax)?pdict.order.totalTax.value.toFixed(2):"");
+		__utagData.order_shipping = pdict.order.adjustedShippingTotalNetPrice.value.toFixed(2);
+		__utagData.order_payment_type = pdict.order.paymentInstrument.paymentMethod;
+		__utagData.order_total = (pdict.order.adjustedMerchandizeTotalGrossPrice.value + pdict.order.adjustedShippingTotalNetPrice.value + pdict.order.shippingTotalTax.value).toFixed(2);
+		__utagData.order_currency = pdict.order.currencyCode;
+		__utagData.order_postal_code = "" + pdict.order.billingAddress.postalCode;
+
+	}
+	
+	if (pdict.product != null && pdict.product.productSet == true && pdict.productsetarraylistout != null)
+	{
+		__utagData.page_name = pdict.product.name;
+		__utagData.page_type = "product set";
+		__utagData.product_name = new Array();
+		__utagData.product_brand = new Array();
+		__utagData.product_sku = new Array();
+		__utagData.product_id = new Array();
+		__utagData.product_category = new Array();
+		__utagData.product_unit_price = new Array();
+		
+		/* OPTIONAL */
+		/*
+		__utagData.product_manufacturer = new Array();
+		__utagData.product_classification = new Array();
+		*/
+		/* END OPTIONAL: */
+		for each(var ___pli in pdict.productsetarraylistout)
+		{
+			__utagData.product_id.push("" + ___pli.ID);
+			__utagData.product_name.push("" + ___pli.name);	
+			__utagData.product_brand.push("" + ___pli.brand);
+			__utagData.product_sku.push("" + ___pli.manufacturerSKU);
+			
+			/* OPTIONAL: manufacturer */
+			/*
+			
+			__utagData.product_manufacturer.push("" + ___pli.manufacturerName);
+			*/
+			/* END OPTIONAL: manufacturer
+			
+			/* OPTIONAL: product classification */
+			/*		
+			if (___pli.classificationCategory != null)
+			{
+				__utagData.product_classification.push("" + ___pli.classificationCategory.displayName);
+			}else{
+				__utagData.product_classification.push("");
+			}
+			*/
+			/* END OPTIONAL: product classification */
+			
+			if (___pli.primaryCategory != null)
+			{
+				__utagData.product_category.push("" + ___pli.primaryCategory.ID);
+			}
+			else if(___pli.master == false && ___pli.masterProduct != null && ___pli.masterProduct.primaryCategory != null)
+			{
+				__utagData.product_category.push("" + ___pli.masterProduct.primaryCategory.ID);
+			}
+			else{
+				__utagData.product_category.push("");
+			}
+			
+			
+			if (___pli.priceModel.price.value != "0")
+			{
+				__utagData.product_unit_price.push(""+___pli.priceModel.price.value.toFixed(2));
+			}
+			else if (___pli.priceModel.maxPrice.value != "0")
+			{
+				__utagData.product_unit_price.push(""+___pli.priceModel.maxPrice.value.toFixed(2));
+			}
+			else
+			{
+				__utagData.product_unit_price.push(""+ ___pli.priceModel.minPrice.value.toFixed(2));
+			}
+			
+		}
+		
+	}
+	
+	if ((__utagData.page_context_type == "checkout" || __utagData.page_context_type == "cart") && pdict.product == null && pdict.basket != null && pdict.basket.productLineItems != null) 
+	{
+		__utagData.page_type = "checkout";
+		__productLineItems = pdict.basket.productLineItems;
+		__couponLineItems = pdict.basket.couponLineItems;
+		__priceAdjustments = pdict.basket.priceAdjustments;
+	}
+	
+	if (__couponLineItems != null && __couponLineItems.length != null && __couponLineItems.length>0)
+	{
+		__utagData.coupon_codes = new Array();
+		for each(var ___cli : CouponLineItem in __couponLineItems)
+		{
+			__utagData.coupon_codes.push(___cli.couponCode);
+		}
+	}
+	
+	if (__priceAdjustments != null && __priceAdjustments.length>0)
+	{
+		__utagData.order_coupon_discount = new Array();
+		__utagData.order_coupon_promo = new Array();
+		for each(var ___priceAdj : PriceAdjustment in __priceAdjustments)
+		{
+	    	if (___priceAdj.promotion != null && ___priceAdj.promotion.promotionClass == "ORDER")
+	    	{
+				__utagData.order_coupon_discount.push( ___priceAdj.priceValue + "");
+				__utagData.order_coupon_promo.push( ___priceAdj.promotionID + "");
+	 		}
+		}				
+	}
+	
+	if (__productLineItems != null)
+	{
+		__utagData.product_name = new Array();
+		__utagData.product_brand = new Array();
+		__utagData.product_unit_price = new Array();
+		__utagData.product_sku = new Array();
+		__utagData.product_id = new Array();
+		__utagData.product_category = new Array();
+		__utagData.product_quantity = new Array();
+		__utagData.product_coupon_discount = new Array();
+		__utagData.product_coupon_promo = new Array();
+		/* OPTIONAL */
+		/*
+		__utagData.product_manufacturer = new Array();
+		__utagData.product_classification = new Array();
+		*/
+		/* END OPTIONAL */
+		
+		for each(var ___pli : ProductLineItem in __productLineItems)
+		{
+			if ( ___pli.product != null ) {
+				__utagData.product_id.push("" + ___pli.product.ID);
+				__utagData.product_name.push("" + ___pli.product.name);	
+			 	__utagData.product_brand.push("" + ___pli.product.brand);
+				__utagData.product_sku.push("" + ___pli.manufacturerSKU);
+			
+				/* OPTIONAL: product manufacturer */
+				/*
+				__utagData.product_manufacturer.push("" + ___pli.product.manufacturerName);
+				*/
+				/* END OPTIONAL: product manufacturer */
+				
+				/* OPTIONAL: product classification */
+				/*
+				if (___pli.product.classificationCategory != null)
+				{
+					__utagData.product_classification.push("" + ___pli.product.classificationCategory.displayName);
+				}else{
+					__utagData.product_classification.push("");
+				}
+				*/
+				/* END OPTIONAL: product classification */
+				
+				if (___pli.product.primaryCategory != null)
+				{
+					__utagData.product_category.push("" + ___pli.product.primaryCategory.ID);
+				}
+				else if(___pli.product.master == false && ___pli.product.masterProduct != null && ___pli.product.masterProduct.primaryCategory != null)
+				{
+					__utagData.product_category.push("" + ___pli.product.masterProduct.primaryCategory.ID);
+				}
+				else{
+					__utagData.product_category.push("");
+				}
+	
+				__utagData.product_quantity.push("" + ___pli.quantityValue);
+				__utagData.product_unit_price.push("" + ___pli.getBasePrice().value);
+	            __priceAdjustments = ___pli.priceAdjustments;
+	
+				if (__priceAdjustments != null && __priceAdjustments.length>0)
+				{
+				 	var __priceValue = 0;
+			    	var __promotionID = "";
+			    	
+					for each(var ___priceAdj : PriceAdjustment in __priceAdjustments)
+			    	{
+			    		if (___priceAdj.promotion != null && ___priceAdj.promotion.promotionClass != "ORDER")
+			    		{
+			    			if (__promotionID != "")
+			    			{
+			    				__promotionID += ",";
+			    			}    
+			    			__priceValue += ___priceAdj.priceValue;
+			    			__promotionID = __promotionID + ___priceAdj.promotionID;
+			    		}
+			    	}	
+			    	__utagData.product_coupon_discount.push( __priceValue + "");
+			    	__utagData.product_coupon_promo.push( __promotionID );
+		
+				}
+				else{
+					__utagData.product_coupon_discount.push("0");
+			    	__utagData.product_coupon_promo.push("");
+				}
+				
+	
+				/*** This may only make sense if each product has the same number of categories.  And category "types" are in the same order for each product. ***/
+				/*** BEGIN: Multiple Product Categories ***/
+				/*	
+				if (___pli.product.categories != null){
+					for(var ___cat in ___pli.product.categories){
+						if(__utagData["product_cat_id"+___cat] == null){__utagData["product_cat_id"+___cat] = new Array();}
+						if(__utagData["product_cat_name"+___cat] == null){__utagData["product_cat_name"+___cat] = new Array();}
+						__utagData["product_cat_id"+___cat].push(""+___pli.product.categories[___cat].ID);
+						__utagData["product_cat_name"+___cat].push(""+___pli.product.categories[___cat].displayName);
+					}
+				}
+				*/
+				/*** END: Multiple Product Categories ***/
+			}
+		}
+	}
+	
+	__utagDataStr = JSON.stringify(__utagData, null, "  ");
+	
+	out.print("\n<script type=\"text/javascript\">\nvar utag_data = " + __utagDataStr + ";\n</script>");
+
+/* DEBUG (uncomment for debug) */
+//}catch(e){out.print("<pre>\n");out.print("\nException : " + e);out.print("\n</pre>");};
+/* END DEBUG */
+
+</isscript>
+
+<script type="text/javascript">
+    (function(a,b,c,d){
+    a='//tags.tiqcdn.com/utag/${dw.system.Site.current.preferences.custom.tealium_account}/${dw.system.Site.current.preferences.custom.tealium_profile}/${dw.system.Site.current.preferences.custom.tealium_env}/utag.js';
+    b=document;c='script';d=b.createElement(c);d.src=a;d.type='text/java'+c;d.async=1;
+    a=b.getElementsByTagName(c)[0];a.parentNode.insertBefore(d,a);
+    })();
+</script>
+
+<iselse>
+ 
+</isif>
