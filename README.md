@@ -9,7 +9,7 @@ Use of this software is subject to the terms and conditions of the license agree
 
 ## Trademarks
 
-Demandware is a registered trademark of Demandware, Inc. All rights reserved. Tealium is not an affiliate of Demandware, Inc.”
+Demandware is a registered trademark of Demandware, Inc. All rights reserved. Tealium is not an affiliate of Demandware, Inc.
 
 ---
 Copyright (C) 2012-2016, Tealium Inc.
