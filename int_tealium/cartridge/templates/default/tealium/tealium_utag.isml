@@ -1,0 +1,18 @@
+<!--- TEMPLATENAME: tealium_utag.isml --->
+<iscomment>Add Tealium data layer (utag_data) and utag.js to page</iscomment>	
+
+<!-- Tealium (Begin) -->
+<script type="text/javascript">
+<isscript>
+out.print( "var utag_data = " + pdict.tealiumDataLayer + ";" );
+</isscript> 
+</script>
+
+<script type="text/javascript">
+    (function(a,b,c,d){
+    a='//tags.tiqcdn.com/utag/${dw.system.Site.current.preferences.custom.tealium_account}/${dw.system.Site.current.preferences.custom.tealium_profile}/${dw.system.Site.current.preferences.custom.tealium_env}/utag.js';
+    b=document;c='script';d=b.createElement(c);d.src=a;d.type='text/java'+c;d.async=1;
+    a=b.getElementsByTagName(c)[0];a.parentNode.insertBefore(d,a);
+    })();
+</script>
+<!-- Tealium (End) -->
