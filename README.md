@@ -1,6 +1,6 @@
-# Tealium Demandware Cartridge
+# Tealium Demandware (Salesforce Commerce Cloud) Cartridge
 
-This GitHub repository is for reference only.  Please download the latest cartridge from Demandware XChange
+This GitHub repository is for reference only.  Please download the latest cartridge from Salesforce XChange
 - https://xchange.demandware.com/docs/DOC-11251
 
 ## License
@@ -12,4 +12,4 @@ Use of this software is subject to the terms and conditions of the license agree
 Demandware is a registered trademark of Demandware, Inc. All rights reserved. Tealium is not an affiliate of Demandware, Inc.
 
 ---
-Copyright (C) 2012-2016, Tealium Inc.
+Copyright (C) 2012-2017, Tealium Inc.
