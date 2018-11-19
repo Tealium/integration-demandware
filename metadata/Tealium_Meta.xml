@@ -31,7 +31,7 @@
             </attribute-definition>
             <attribute-definition attribute-id="tealium_enabled_flag">
                 <display-name xml:lang="x-default">Tealium Enabled</display-name>
-                <description xml:lang="x-default">This box must be checked to enable this integration</description>
+                <description xml:lang="x-default">This must be set to "Yes" to enable this integration</description>
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
